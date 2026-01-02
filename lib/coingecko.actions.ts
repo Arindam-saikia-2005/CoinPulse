@@ -3,14 +3,17 @@ import qs from "query-string"
 const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
-if (!BASE_URL) throw new Error('could not get base url');
-if (!API_KEY) throw new Error('could not get Api key');
-
 export async function fetcher<T>(
     endpoint: string,
     params?: QueryParams,
     revalidate =  60,
 ): Promise<T> {
+    if(!BASE_URL) {
+        throw new Error('COINGECKO_BASE_URL environment variable is not configured')
+    } 
+    if(!API_KEY) {
+        throw new Error('COINGECKO_API_KEY environment variable is not configured')
+    }
     const url = qs.stringifyUrl({
         url: `${BASE_URL}/${endpoint}`,
         query: params,

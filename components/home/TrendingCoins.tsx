@@ -2,7 +2,7 @@ import { fetcher } from "@/lib/coingecko.actions";
 import DataTable from "../DataTable";
 import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { TrendingCoinsFallback } from "./fallBack";
 
@@ -25,7 +25,8 @@ const columns: DataTableColumn<TrendingCoin>[] = [
     cellClassName: "name-cell",
     cell: (coin) => {
       const item = coin.item;
-      const istrendingUp = item.data.price_change_percentage_24h.usd > 0;
+      const priceChange = item.data?.price_change_percentage_24h?.usd ?? 0;
+      const istrendingUp = priceChange > 0;
 
       return (
         <div
@@ -40,7 +41,7 @@ const columns: DataTableColumn<TrendingCoin>[] = [
             ) : (
               <TrendingDown height={16} width={16} />
             )}
-            {Math.abs(item.data.price_change_percentage_24h.usd).toFixed(2)}%
+            {Math.abs(priceChange).toFixed(2)}%
           </p>
         </div>
       );
@@ -49,7 +50,7 @@ const columns: DataTableColumn<TrendingCoin>[] = [
   {
     header: "Price",
     cellClassName: "price-cell",
-    cell: (coin) => coin.item.data.price,
+    cell: (coin) => formatCurrency(coin.item.data.price),
   },
 ];
 
@@ -57,7 +58,7 @@ const TrendingCoins = async () => {
   let trendingCoins;
   try {
     trendingCoins = await fetcher<{ coins: TrendingCoin[] }>(
-      "/search/trending",
+      "search/trending",
       undefined,
       300
     );
@@ -70,16 +71,14 @@ const TrendingCoins = async () => {
     <div id="trending-coins">
       <h4>Trending Coins</h4>
 
-      <div id="trending-coins">
-        <DataTable
-          data={trendingCoins.coins.slice(0, 6) || []}
-          columns={columns}
-          rowKey={(coin) => coin.item.id}
-          tableClassName="trending-coins-table"
-          headerCellClassName="py-3!"
-          bodyCellClassName="py-2!"
-        />
-      </div>
+      <DataTable
+        data={trendingCoins.coins?.slice(0, 6) ?? []}
+        columns={columns}
+        rowKey={(coin) => coin.item.id}
+        tableClassName="trending-coins-table"
+        headerCellClassName="py-3!"
+        bodyCellClassName="py-2!"
+      />
     </div>
   );
 };
